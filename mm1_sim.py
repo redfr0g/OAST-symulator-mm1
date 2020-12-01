@@ -20,6 +20,8 @@ import sys
 import stdrandom
 from linkedqueue import Queue
 from statistics import mean
+import numpy as np
+import matplotlib.pyplot as plt
 
 # Pobieranie danych
 arrv_rate = float(sys.argv[1])
@@ -37,6 +39,7 @@ service_list = []
 
 next_arrival = stdrandom.exp(arrv_rate)
 next_service = next_arrival + stdrandom.exp(srv_time)
+
 
 while next_arrival < limit:
 
@@ -84,4 +87,23 @@ print("Mean simulation system time (średni czas przebywania w systemie): {}".fo
 
 print("Mean theoretical system time (teoretyczny średni czas obsługi): {}".format(1/srv_time))
 print("Mean theoretical system time (teoretyczny średni czas przebywania w systemie): {}".format(mean_system_theo))
+
+
+
+
+#Wykres zbieżności prawdopodobieństwa 𝑝0(𝑡) do wartości 𝑝0 z rozkładu stacjonarnego
+
+p0 = 1 - arrv_rate/srv_time
+p02 = np.linspace(p0, p0, 10)
+
+t = np.linspace(0, 0.3, 10)
+func = np.exp(-arrv_rate*t)
+
+plt.figure()
+plt.plot(t, func, t, p02)
+plt.title('Tytuł: zbieżność po(t) do po dla ro = {}'.format(arrv_rate/srv_time))
+plt.xlabel('t')
+plt.ylabel('exp(-lambda*t)')
+
+plt.show()
 
