@@ -94,13 +94,13 @@ print("Mean theoretical system time (teoretyczny średni czas przebywania w syst
 #Wykres zbieżności prawdopodobieństwa 𝑝0(𝑡) do wartości 𝑝0 z rozkładu stacjonarnego
 
 p0 = 1 - arrv_rate/srv_time
-p02 = np.linspace(p0, p0, 10)
+p0_vector = np.linspace(p0, p0, 10)
 
 t = np.linspace(0, 0.3, 10)
 func = np.exp(-arrv_rate*t)
 
 plt.figure()
-plt.plot(t, func, t, p02)
+plt.plot(t, func, t, p0_vector)
 plt.title('Tytuł: zbieżność po(t) do po dla ro = {}'.format(arrv_rate/srv_time))
 plt.xlabel('t')
 plt.ylabel('exp(-lambda*t)')
