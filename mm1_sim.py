@@ -3,9 +3,6 @@
 OAST 2020Z - M/M/1 System Simulator
 
 TODO:
-- add code comments
-- optimalisation
-- add empty system probability distribution graph
 - add continous service model
 - add cmd input with flags
 
@@ -20,7 +17,6 @@ import sys
 import stdrandom
 from linkedqueue import Queue
 from statistics import mean
-import numpy as np
 import matplotlib.pyplot as plt
 
 # Pobieranie danych
@@ -34,6 +30,8 @@ mean_system_theo = 1 / (srv_time * (1 - arrv_rate / srv_time))
 queue = Queue()
 
 prev_wait_time = 0
+empty_system_time = 0
+empty_system_prob_dict = {}
 wait_list = []
 service_list = []
 
@@ -59,6 +57,14 @@ while next_arrival < limit:
     prev_wait_time = wait_time
 
     if queue.isEmpty():
+
+        # jeżeli kolejka jest pusta i system obsłuży klienta szybciej niż nowy napłynie to wtedy system będzie pusty do czasu napływu nowego klienta
+        if next_service < next_arrival:
+            empty_system_time += next_arrival - next_service
+
+            # lista p-stwa pustego systemu w czasie P(t) = czas kiedy system jest pusty/całkowity czas symulacji
+            empty_system_prob_dict[next_service] = empty_system_time/next_service
+
         prev_service_time = next_service
         next_service = next_arrival + stdrandom.exp(srv_time)
 #jak kolejka jest pusta to czas trawnia obsługi = czas wyjścia - czas przyjścia
@@ -82,28 +88,31 @@ mean_service = mean(service_list)
 
 print()
 #print("Mean simulation queue wait time: {}".format(mean_wait))
-print("Mean simulation service time(średni czas obsługi): {}".format(mean_service))
-print("Mean simulation system time (średni czas przebywania w systemie): {}".format(mean_wait))
-
+print("Mean simulation service time (średni czas obsługi): {}".format(mean_service))
 print("Mean theoretical system time (teoretyczny średni czas obsługi): {}".format(1/srv_time))
+print()
+print("Mean simulation system time (średni czas przebywania w systemie): {}".format(mean_wait))
 print("Mean theoretical system time (teoretyczny średni czas przebywania w systemie): {}".format(mean_system_theo))
-
+print()
+print("Simulation empty system probability (prawdopodobieństwo pustego systemu): {}".format(empty_system_time/limit))
+print("Theoretical empty system probability (teoretyczne prawdopodobieństwo pustego systemu): {}".format(1 - arrv_rate/srv_time))
 
 
 
 #Wykres zbieżności prawdopodobieństwa 𝑝0(𝑡) do wartości 𝑝0 z rozkładu stacjonarnego
 
 p0 = 1 - arrv_rate/srv_time
-p0_vector = np.linspace(p0, p0, 10)
-
-t = np.linspace(0, 0.3, 10)
-func = np.exp(-arrv_rate*t)
+t = empty_system_prob_dict.keys()
+p0_vector = [p0] * len(t)
+func = empty_system_prob_dict.values()
 
 plt.figure()
 plt.plot(t, func, t, p0_vector)
-plt.title('Tytuł: zbieżność po(t) do po dla ro = {}'.format(arrv_rate/srv_time))
-plt.xlabel('t')
+plt.title('Wykres p0(t) do p0 dla ρ={}'.format(arrv_rate/srv_time))
+plt.xlabel('Czas symulacji')
 plt.ylabel('exp(-lambda*t)')
+plt.ylim(bottom=0, top=1)
+plt.xlim(left=0, right=limit)
 
 plt.show()
 
