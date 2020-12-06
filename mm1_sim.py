@@ -47,12 +47,12 @@ while next_arrival < limit:
         queue.enqueue(next_arrival)
         next_arrival += stdrandom.exp(arrv_rate)
 
-#obsługa nowego pakietu
+    #obsługa nowego pakietu
     arrival = queue.dequeue()
-#czas przebywania w systemie = czas kiedy klient zostanie obsłużony - czas przybycia klienta
+    #czas przebywania w systemie = czas kiedy klient zostanie obsłużony - czas przybycia klienta
     wait_time = next_service - arrival
 
-#czas obsługi w serwerze = cały czas w systemie - czas wyjścia poprzedniego klienta
+    #czas obsługi w serwerze = cały czas w systemie - czas wyjścia poprzedniego klienta
     wait_duration = wait_time - prev_wait_time
     prev_wait_time = wait_time
 
@@ -67,17 +67,17 @@ while next_arrival < limit:
 
         prev_service_time = next_service
         next_service = next_arrival + stdrandom.exp(srv_time)
-#jak kolejka jest pusta to czas trawnia obsługi = czas wyjścia - czas przyjścia
+        #jak kolejka jest pusta to czas trawnia obsługi = czas wyjścia - czas przyjścia
         service_duration = next_service - next_arrival
     else:
         prev_service_time = next_service
         next_service = next_service + stdrandom.exp(srv_time)
-# jak kolejka nie jest pusta to czas trawnia obsługi = czas wyjścia - czas wyjścia poprzedniego klienta
+        # jak kolejka nie jest pusta to czas trawnia obsługi = czas wyjścia - czas wyjścia poprzedniego klienta
         service_duration = next_service - prev_service_time
 
-#średni czas przebywania w systemie
+    #średni czas przebywania w systemie
     wait_list.append(wait_time)
-#średni czas obsługi
+    #średni czas obsługi
     service_list.append(service_duration)
 
 mean_wait = mean(wait_list)
@@ -109,9 +109,9 @@ func = empty_system_prob_dict.values()
 plt.figure()
 plt.plot(t, func, t, p0_vector)
 plt.title('Wykres p0(t) do p0 dla ρ={}'.format(arrv_rate/srv_time))
-plt.xlabel('Czas symulacji')
-plt.ylabel('exp(-lambda*t)')
-plt.ylim(bottom=0, top=1)
+plt.xlabel('Czas symulacji (t)')
+plt.ylabel('p0(t)')
+plt.ylim(bottom=0, top=1.2)
 plt.xlim(left=0, right=limit)
 
 plt.show()
