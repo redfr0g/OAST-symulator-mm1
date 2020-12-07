@@ -56,6 +56,7 @@ while next_arrival < limit:
 
     #arrival - to klient, którego teraz będziemy obłsugiwać
     #sprawdzamy czy obsługujemy prawdziwego czy wyimaginowanego klienta, jak wyimaginowanego to kolejka może być pusta
+    #być może będziemy obługiwać kliku wyimaginowanych klietnów przy długich odstępach pomiędzy zgłoszeniami
     if not queue.isEmpty():
         arrival = queue.dequeue()
         n_system -= 1
@@ -73,7 +74,7 @@ while next_arrival < limit:
             # lista p-stwa pustego systemu w czasie P(t) = czas kiedy system jest pusty/całkowity czas symulacji
             empty_system_prob_dict[next_service] = empty_system_time/next_service
 
-            #gdy kolejka jest pusta zabieramy się za wyimaginowanego klienta
+            #w tej stytuacji zabieramy się za wyimaginowanego klienta
             next_service = next_service + stdrandom.exp(srv_time)
         else:
             next_service = next_arrival + stdrandom.exp(srv_time)
