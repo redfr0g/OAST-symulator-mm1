@@ -27,8 +27,8 @@ queue = Queue()
 
 empty_system_time = 0
 empty_system_prob_dict = {}
-wait_time = 0
-wait_list = []
+system_time = 0
+system_time_list = []
 service_list = []
 clients_in_system_list = []
 clients_in_queue_list = []
@@ -65,7 +65,7 @@ while next_arrival < limit:
         clients_in_system -= 1
 
         #czas przebywania w systemie = czas kiedy klient zostanie obsłużony - czas przybycia klienta
-        wait_time = next_service - arrival
+        system_time = next_service - arrival
 
     if queue.isEmpty():
 
@@ -91,7 +91,7 @@ while next_arrival < limit:
         service_duration = next_service - prev_service_time
 
     # średni czas przebywania w systemie
-    wait_list.append(wait_time)
+    system_time_list.append(system_time)
     # średni czas obsługi
     service_list.append(service_duration)
     # średnia liczba klientów w systemie
@@ -99,7 +99,7 @@ while next_arrival < limit:
     # średnia liczba klientów w kolejce
     clients_in_queue_list.append(clients_in_queue)
 
-mean_wait = mean(wait_list)
+mean_system_time = mean(system_time_list)
 mean_service = mean(service_list)
 mean_clients_in_queue = mean(clients_in_queue_list)
 mean_clients_in_system = mean(clients_in_system_list)
@@ -109,7 +109,7 @@ print()
 print("Mean simulation service time (średni czas obsługi): {}".format(mean_service))
 print("Mean theoretical system time (teoretyczny średni czas obsługi): {}".format(1/srv_time))
 print()
-print("Mean simulation system time (średni czas przebywania w systemie): {}".format(mean_wait))
+print("Mean simulation system time (średni czas przebywania w systemie): {}".format(mean_system_time))
 print("Mean theoretical system time (teoretyczny średni czas przebywania w systemie): {}".format(1 / (srv_time - arrv_rate)))
 print()
 print("Mean number of client in a queue (średnia liczba klientów w kolejce): {}".format(mean_clients_in_queue))
