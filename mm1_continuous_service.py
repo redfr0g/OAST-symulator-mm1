@@ -54,7 +54,7 @@ while next_arrival < limit:
         queue.enqueue(next_arrival)
         next_arrival += stdrandom.exp(arrv_rate)
         clients_in_system += 1
-        if len(queue) != 1:
+        if len(queue) > 1:
             clients_in_queue += 1
 
 
