@@ -69,7 +69,7 @@ while next_arrival < limit:
 
     if queue.isEmpty():
 
-        # dla pewności że nie będze błędu przy pustej kolejce
+        # dla pewności że nie będze błędu przy pustej kolejce i żeby liczba klientów nie była ujemna
         clients_in_queue = 0
 
         # jeżeli kolejka jest pusta i system obsłuży klienta szybciej niż nowy napłynie to wtedy system będzie pusty do czasu napływu nowego klienta
