@@ -23,15 +23,11 @@ arrv_rate = float(sys.argv[1])
 srv_time = float(sys.argv[2])
 limit = int(sys.argv[3])
 
-# Calculate theoretical mean time spent in system
-#mean_system_time_theory = 1 / (srv_time * (1 - arrv_rate / srv_time))
-mean_system_time_theory = 1 / (srv_time - arrv_rate)
-
 queue = Queue()
 
-#prev_wait_time = 0
 empty_system_time = 0
 empty_system_prob_dict = {}
+wait_time = 0
 wait_list = []
 service_list = []
 clients_in_system_list = []
@@ -41,6 +37,7 @@ clients_in_system = 0
 clients_in_queue = 0
 system_usage = arrv_rate / srv_time
 
+#generowanie czasu pierwszego zgłoszenia i czasu obsługi
 next_arrival = stdrandom.exp(arrv_rate)
 next_service = next_arrival + stdrandom.exp(srv_time)
 #obliczenie czasu obługi dla pierwszego kilenta
@@ -53,25 +50,22 @@ while next_arrival < limit:
 
     while next_arrival < next_service:
         queue.enqueue(next_arrival)
-        clients_in_system += 1
-        clients_in_queue += 1
         next_arrival += stdrandom.exp(arrv_rate)
+        clients_in_system += 1
+        if len(queue) != 1:
+            clients_in_queue += 1
 
     #obsługa nowego pakietu
-    if clients_in_queue == 0:
+    if clients_in_system == 0:
         pass
     else:
+        # arrival - to klient, którego teraz będziemy obłsugiwać
         arrival = queue.dequeue()
         clients_in_queue -= 1
         clients_in_system -= 1
 
-    #czas przebywania w systemie = czas kiedy klient zostanie obsłużony - czas przybycia klienta
-    #arrival - to klient, którego teraz będziemy obłsugiwać
+        #czas przebywania w systemie = czas kiedy klient zostanie obsłużony - czas przybycia klienta
         wait_time = next_service - arrival
-
-    #czas obsługi w serwerze = cały czas w systemie - czas wyjścia poprzedniego klienta
-    #wait_duration = wait_time - prev_wait_time
-    #prev_wait_time = wait_time
 
     if queue.isEmpty():
 
@@ -102,7 +96,7 @@ while next_arrival < limit:
     service_list.append(service_duration)
     # średnia liczba klientów w systemie
     clients_in_system_list.append(clients_in_system)
-    # średnia liczba klientów w kolejce - DO POPRAWY
+    # średnia liczba klientów w kolejce
     clients_in_queue_list.append(clients_in_queue)
 
 mean_wait = mean(wait_list)
@@ -110,16 +104,13 @@ mean_service = mean(service_list)
 mean_clients_in_queue = mean(clients_in_queue_list)
 mean_clients_in_system = mean(clients_in_system_list)
 
-#zakomentowalam i moim zdaniem to jest do usunięcia to bo my tutaj nigdzie nie obliczamy średniego czasu przebywania w kolejce
-#mean_system = mean_wait + mean_service
 
 print()
-#print("Mean simulation queue wait time: {}".format(mean_wait))
 print("Mean simulation service time (średni czas obsługi): {}".format(mean_service))
 print("Mean theoretical system time (teoretyczny średni czas obsługi): {}".format(1/srv_time))
 print()
 print("Mean simulation system time (średni czas przebywania w systemie): {}".format(mean_wait))
-print("Mean theoretical system time (teoretyczny średni czas przebywania w systemie): {}".format(mean_system_time_theory))
+print("Mean theoretical system time (teoretyczny średni czas przebywania w systemie): {}".format(1 / (srv_time - arrv_rate)))
 print()
 print("Mean number of client in a queue (średnia liczba klientów w kolejce): {}".format(mean_clients_in_queue))
 print("Mean theoretical number of client in a queue (teoretyczna średnia liczba klientów w kolejce): {}".format((system_usage**2)/(1 - system_usage)))
@@ -129,7 +120,6 @@ print("Mean theoretical number of client in a system (teoretyczna średnia liczb
 print()
 print("Simulation empty system probability (prawdopodobieństwo pustego systemu): {}".format(empty_system_time/limit))
 print("Theoretical empty system probability (teoretyczne prawdopodobieństwo pustego systemu): {}".format(1 - arrv_rate/srv_time))
-
 
 
 #Wykres zbieżności prawdopodobieństwa 𝑝0(𝑡) do wartości 𝑝0 z rozkładu stacjonarnego
