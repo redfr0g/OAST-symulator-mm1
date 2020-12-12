@@ -9,8 +9,11 @@ TODO:
 Usage:
 C:\>python mm1_continuous_service.py <Arrival rate> <Service rate> <Simulation limit>
 
-Example:
+Example (random imaginary service time):
 C:\>python mm1_continuous_service.py .1 .4 1000
+
+Example (static imaginary service time):
+C:\>python mm1_continuous_service.py .1 .4 1000 static
 
 '''
 import sys
@@ -18,11 +21,19 @@ import stdrandom
 from linkedqueue import Queue
 from statistics import mean
 
+print(len(sys.argv))
 # Pobieranie danych
-arrv_rate = float(sys.argv[1])
-srv_time = float(sys.argv[2])
-limit = int(sys.argv[3])
-
+if len(sys.argv) == 4:
+    arrv_rate = float(sys.argv[1])
+    srv_time = float(sys.argv[2])
+    limit = int(sys.argv[3])
+    img_service_type = "random"
+else:
+    arrv_rate = float(sys.argv[1])
+    srv_time = float(sys.argv[2])
+    limit = int(sys.argv[3])
+    # do użycia w przypadku stałego czasu obsługi klientów wyimaginowanych
+    img_service_type = str(sys.argv[4])
 
 queue = Queue()
 
@@ -42,6 +53,7 @@ next_arrival = stdrandom.exp(arrv_rate)
 next_service = next_arrival + stdrandom.exp(srv_time)
 #obliczenie czasu obługi dla pierwszego kilenta
 service_duration = next_service - next_arrival
+mean_service = service_duration
 #service_list.append(service_duration)
 
 real_client = True
@@ -82,9 +94,13 @@ while next_arrival < limit:
             #drugi raz wejdziemy w tego if to już c_i_s = 0
             #clients_in_system = 1
             # Continous Service - obsługujemy od razu wyimaginowanego klienta
-            next_service = next_service + stdrandom.exp(srv_time)
+
+            if img_service_type == "static":
+                next_service = next_service + mean_service
+            else:
+                next_service = next_service + stdrandom.exp(srv_time)
             # czas trawnia obsługi = czas wyjścia - czas przyjścia
-            service_duration = next_service - prev_service_time
+            #service_duration = next_service - prev_service_time
             imaginary_service_time += service_duration
             real_client = False
         else:
@@ -105,7 +121,9 @@ while next_arrival < limit:
         # średni czas przebywania w systemie dla prawdziwych klientów
         system_time_list.append(system_time)
         # średni czas obsługi
-        # service_list.append(service_duration)
+        service_list.append(service_duration)
+        # średni czas obsługi prawdziewgo klienta
+        mean_service = mean(service_list)
         # średni czas w kolejce dla prawdziwych klientów
         queue_time_list.append(system_time - service_duration)
         # średnia liczba klientów w systemie dla prawdziwych klientów
@@ -113,9 +131,7 @@ while next_arrival < limit:
         # średnia liczba klientów w kolejce
         clients_in_queue_list.append(clients_in_queue)
 
-
 mean_system_time = mean(system_time_list)
-#mean_service = mean(service_list)
 mean_queue = mean(queue_time_list)
 mean_clients_in_queue = mean(clients_in_queue_list)
 mean_clients_in_system = mean(clients_in_system_list)

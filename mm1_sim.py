@@ -107,7 +107,7 @@ mean_clients_in_system = mean(clients_in_system_list)
 
 print()
 print("Mean simulation service time (średni czas obsługi): {}".format(mean_service))
-print("Mean theoretical system time (teoretyczny średni czas obsługi): {}".format(1/srv_time))
+print("Mean theoretical service time (teoretyczny średni czas obsługi): {}".format(1/srv_time))
 print()
 print("Mean simulation system time (średni czas przebywania w systemie): {}".format(mean_system_time))
 print("Mean theoretical system time (teoretyczny średni czas przebywania w systemie): {}".format(1 / (srv_time - arrv_rate)))
