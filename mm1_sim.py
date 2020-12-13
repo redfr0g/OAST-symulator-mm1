@@ -37,52 +37,50 @@ clients_in_system = 0
 clients_in_queue = 0
 system_usage = arrv_rate / srv_time
 
-#generowanie czasu pierwszego zgłoszenia i czasu obsługi
-next_arrival = stdrandom.exp(arrv_rate)
-next_service = next_arrival + stdrandom.exp(srv_time)
-#obliczenie czasu obługi dla pierwszego kilenta
-service_duration = next_service - next_arrival
+# generowanie czasu pierwszego zgłoszenia i czasu obsługi
+next_client = stdrandom.exp(arrv_rate)
+next_service = next_client + stdrandom.exp(srv_time)
+# obliczenie czasu obługi dla pierwszego kilenta
+service_duration = next_service - next_client
 service_list.append(service_duration)
 
-while next_arrival < limit:
+server_empty = next_client > next_service
 
-    print(f"Simulation completion: {int(round((next_arrival/limit)*100))} %", end='\r')
+while next_client < limit:
 
-    while next_arrival < next_service:
-        queue.enqueue(next_arrival)
-        next_arrival += stdrandom.exp(arrv_rate)
+    print(f"Simulation completion: {int(round((next_client / limit) * 100))} %", end='\r')
+
+    while not server_empty:
+        queue.enqueue(next_client)
+        next_client += stdrandom.exp(arrv_rate)
+        server_empty = next_client > next_service
         clients_in_system += 1
         if len(queue) > 1:
             clients_in_queue += 1
 
-    #obsługa nowego pakietu
-    if clients_in_system == 0:
-        pass
-    else:
-        # arrival - to klient, którego teraz będziemy obłsugiwać
-        arrival = queue.dequeue()
-        clients_in_queue -= 1
-        clients_in_system -= 1
+    # obsługa pierwszego w kolejce klienta
+    current_client = queue.dequeue()
+    clients_in_system -= 1
+    if len(queue) > 0:
+     clients_in_queue -= 1
 
-        #czas przebywania w systemie = czas kiedy klient zostanie obsłużony - czas przybycia klienta
-        system_time = next_service - arrival
+
+    # czas przebywania w systemie = czas kiedy klient zostanie obsłużony - czas przybycia klienta
+    system_time = next_service - current_client
 
     if queue.isEmpty():
 
-        # dla pewności że nie będze błędu przy pustej kolejce i żeby liczba klientów nie była ujemna
-        clients_in_queue = 0
+        # jeżeli kolejka jest pusta, to system obsłuży obecnego klienta szybciej niż nowy napłynie
+        # wtedy system będzie pusty do czasu napływu nowego klienta
+        empty_system_time += next_client - next_service
 
-        # jeżeli kolejka jest pusta i system obsłuży klienta szybciej niż nowy napłynie to wtedy system będzie pusty do czasu napływu nowego klienta
-        if next_service < next_arrival:
-            empty_system_time += next_arrival - next_service
-
-            # lista p-stwa pustego systemu w czasie P(t) = czas kiedy system jest pusty/całkowity czas symulacji
-            empty_system_prob_dict[next_service] = empty_system_time/next_service
+        # lista p-stwa pustego systemu w czasie P(t) = czas kiedy system jest pusty/całkowity czas symulacji
+        empty_system_prob_dict[next_service] = empty_system_time/next_service
 
         prev_service_time = next_service
-        next_service = next_arrival + stdrandom.exp(srv_time)
-        #jak kolejka jest pusta to czas trawnia obsługi = czas wyjścia - czas przyjścia
-        service_duration = next_service - next_arrival
+        next_service = next_client + stdrandom.exp(srv_time)
+        # jak kolejka jest pusta to czas trawnia obsługi = czas wyjścia - czas przyjścia
+        service_duration = next_service - next_client
 
     else:
         prev_service_time = next_service
@@ -90,13 +88,15 @@ while next_arrival < limit:
         # jak kolejka nie jest pusta to czas trawnia obsługi = czas wyjścia - czas wyjścia poprzedniego klienta
         service_duration = next_service - prev_service_time
 
-    # średni czas przebywania w systemie
+    server_empty = next_client > next_service
+
+    # czas przebywania w systemie
     system_time_list.append(system_time)
-    # średni czas obsługi
+    # czas obsługi
     service_list.append(service_duration)
-    # średnia liczba klientów w systemie
+    # liczba klientów w systemie
     clients_in_system_list.append(clients_in_system)
-    # średnia liczba klientów w kolejce
+    # liczba klientów w kolejce
     clients_in_queue_list.append(clients_in_queue)
 
 mean_system_time = mean(system_time_list)
