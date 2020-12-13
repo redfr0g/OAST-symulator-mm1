@@ -48,68 +48,66 @@ clients_in_queue_list = []
 clients_in_system = 0
 clients_in_queue = 0
 system_usage = arrv_rate / srv_time
+flag = 0
 
-next_arrival = stdrandom.exp(arrv_rate)
-next_service = next_arrival + stdrandom.exp(srv_time)
-#obliczenie czasu obługi dla pierwszego kilenta
-service_duration = next_service - next_arrival
-mean_service = service_duration
-#service_list.append(service_duration)
+next_client = stdrandom.exp(arrv_rate)
+next_service = next_client + stdrandom.exp(srv_time)
+# obliczenie czasu obługi dla pierwszego kilenta
+service_duration = next_service - next_client
+
+mean_service = 1/arrv_rate
+service_list.append(service_duration)
+
+server_empty = next_client > next_service
 
 real_client = True
 
-while next_arrival < limit:
 
-    print(f"Simulation completion: {int(round((next_arrival/limit)*100))} %", end='\r')
+while next_client < limit:
 
-    while next_arrival < next_service:
-        queue.enqueue(next_arrival)
-        next_arrival += stdrandom.exp(arrv_rate)
+    print(f"Simulation completion: {int(round((next_client / limit) * 100))} %", end='\r')
+
+    while not server_empty:
+        queue.enqueue(next_client)
+        next_client += stdrandom.exp(arrv_rate)
+        server_empty = next_client > next_service
         clients_in_system += 1
         if len(queue) > 1:
             clients_in_queue += 1
 
 
+    # sprawdzamy czy w systemie jest jakiś klient, czy będzie obsługiwany klient wyimaginowany
     if not queue.isEmpty():
-        # arrival - to klient, którego teraz będziemy obłsugiwać
-        arrival = queue.dequeue()
-        clients_in_queue -= 1
+        current_client = queue.dequeue()
+        if len(queue) > 0:
+            clients_in_queue -= 1
         clients_in_system -= 1
-        #czas przebywania w systemie = czas kiedy klient zostanie obsłużony - czas przybycia klienta
-        system_time = next_service - arrival
+        # czas przebywania w systemie = czas kiedy klient zostanie obsłużony - czas przybycia klienta
+        system_time = next_service - current_client
         real_client = True
-
 
     if queue.isEmpty():
 
-        # dla pewności że nie będze błędu przy pustej kolejce oraz ujemnych wartości clients_in_queue
-        clients_in_queue = 0
         prev_service_time = next_service
 
         # jeżeli kolejka jest pusta i system obsłuży klienta szybciej niż nowy napłynie to wtedy system ma obsłużyć
         # wyimaginowanego klienta
-        if next_service < next_arrival:
-            #moim zdaniem nie koniecznie clients_in_system=1 bo może się zdarzyć sytuacja, że będzie dwóch klietnów
-            #wyimaginowanych jeden po drugim, i jak pierwszy raz wejdziemy w tego if to rzeczwiście c_i_s ==1, ale jak
-            #drugi raz wejdziemy w tego if to już c_i_s = 0
-            #clients_in_system = 1
-            # Continous Service - obsługujemy od razu wyimaginowanego klienta
+        if next_service < next_client:
 
+            # Continous Service - obsługujemy od razu wyimaginowanego klienta
             if img_service_type == "static":
                 next_service = next_service + mean_service
             else:
                 next_service = next_service + stdrandom.exp(srv_time)
-            # czas trawnia obsługi = czas wyjścia - czas przyjścia
+
             #service_duration = next_service - prev_service_time
             imaginary_service_time += service_duration
             real_client = False
         else:
-            # zakomentowałam bo wydaje mi się, że nie koniecznie; jak obsługujemy drugiego albo trzeciego klienta wyimaginowanego,
-            # ale kolejnym klienetem bd już prawdziwy, to bd w tym miejscu, ale clients_in_system = 0
-            #clients_in_system = 1
-            next_service = next_arrival + stdrandom.exp(srv_time)
+            flag += 1
+            next_service = next_client + stdrandom.exp(srv_time)
             # (klienci prawdziwi) jak kolejka jest pusta to czas trawnia obsługi = czas wyjścia - czas przyjścia
-            service_duration = next_service - next_arrival
+            service_duration = next_service - next_client
 
     else:
         prev_service_time = next_service
@@ -117,20 +115,22 @@ while next_arrival < limit:
         # (klienci prawdziwi) jak kolejka nie jest pusta to czas trawnia obsługi = czas wyjścia - czas wyjścia poprzedniego klienta
         service_duration = next_service - prev_service_time
 
+    server_empty = next_client > next_service
+
     if real_client:
-        # średni czas przebywania w systemie dla prawdziwych klientów
+        # średni czas przebywania w systemie prawdziwych klientów
         system_time_list.append(system_time)
-        # średni czas obsługi
+        # średni czas obsługi prawdziwych klientów
         service_list.append(service_duration)
-        # średni czas obsługi prawdziewgo klienta
-        mean_service = mean(service_list)
-        # średni czas w kolejce dla prawdziwych klientów
+        # średni czas przebywania w kolejce prawdziwych klientów
         queue_time_list.append(system_time - service_duration)
-        # średnia liczba klientów w systemie dla prawdziwych klientów
+        # średnia liczba prawdziwych klientów w systemie
         clients_in_system_list.append(clients_in_system)
-        # średnia liczba klientów w kolejce
+        # średnia liczba prawdziwych klientów w kolejce
         clients_in_queue_list.append(clients_in_queue)
 
+
+mean_service = mean(service_list)
 mean_system_time = mean(system_time_list)
 mean_queue = mean(queue_time_list)
 mean_clients_in_queue = mean(clients_in_queue_list)
@@ -152,3 +152,4 @@ print("Teoretyczny średni czas przejścia przez system E[T]: {}".format(((2 - s
 print("Symulacyjny średni czas przejścia przez system E[T]: {}".format(mean_system_time))
 print()
 print("Symulacyjne prawdopodobienstwo obsługi wyimaginowanego klienta Pimg: {}".format(mean_imaginary_client_prob))
+print(flag)
