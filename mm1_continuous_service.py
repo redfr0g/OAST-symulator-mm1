@@ -100,7 +100,7 @@ while next_client < limit:
             else:
                 next_service = next_service + stdrandom.exp(srv_time)
 
-            #service_duration = next_service - prev_service_time
+            service_duration = next_service - prev_service_time
             imaginary_service_time += service_duration
             real_client = False
         else:
@@ -152,4 +152,3 @@ print("Teoretyczny średni czas przejścia przez system E[T]: {}".format(((2 - s
 print("Symulacyjny średni czas przejścia przez system E[T]: {}".format(mean_system_time))
 print()
 print("Symulacyjne prawdopodobienstwo obsługi wyimaginowanego klienta Pimg: {}".format(mean_imaginary_client_prob))
-print(flag)
